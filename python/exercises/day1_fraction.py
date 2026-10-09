@@ -35,7 +35,7 @@ class Fraction:
 
         self.num = num
         self.den = den
-        self._reduce()          # 构造时立刻约分，后面比较会简单很多
+        self._reduce()  # 构造时立刻约分，后面比较会简单很多
 
     # ------------------------------------------------------------
     def _reduce(self):
@@ -54,7 +54,11 @@ class Fraction:
 
         注意：这个方法【不返回东西】，它直接修改 self 自己。
         """
-        pass        # ← 换成你的代码（现在留空也能跑，只是不约分）
+        g = gcd(self.num, self.den)  # ← 换成你的代码（现在留空也能跑，只是不约分）
+        self.num = self.num // g
+        self.den = self.den // g
+        if self.den < 0:
+            self.num, self.den = -self.num, -self.den
 
     # ------------------------------------------------------------
     def __add__(self, other):
@@ -71,7 +75,9 @@ class Fraction:
         ⚠️ 必须【返回一个新的 Fraction 对象】，不要修改 self。
            因为 a + b 不应该改变 a 本身。
         """
-        raise NotImplementedError("请实现 __add__")
+        new_num = self.num * other.den + other.num * self.den
+        new_den = self.den * other.den
+        return Fraction(new_num, new_den)
 
     # ------------------------------------------------------------
     def __eq__(self, other):
@@ -83,7 +89,7 @@ class Fraction:
         提示：因为构造时已经约分过，所以直接比较就行：
               return self.num == other.num and self.den == other.den
         """
-        raise NotImplementedError("请实现 __eq__")
+        return self.num == other.num and self.den == other.den
 
     # ------------------------------------------------------------
     def __repr__(self):
@@ -98,7 +104,7 @@ class Fraction:
            如果误写成 print(...)，函数会返回 None，然后报错：
            TypeError: __str__ returned non-string (type NoneType)
         """
-        raise NotImplementedError("请实现 __repr__")
+        return f"{self.num}/{self.den}"
 
 
 # ================================================================
@@ -112,15 +118,15 @@ if __name__ == "__main__":
     a = Fraction(1, 2)
     b = Fraction(1, 3)
 
-    print(f"a             = {a}")                  # 期望 1/2
-    print(f"b             = {b}")                  # 期望 1/3
-    print(f"a + b         = {a + b}")              # 期望 5/6
-    print(f"Fraction(2, 4) = {Fraction(2, 4)}")    # 期望 1/2  ← 约分生效
+    print(f"a             = {a}")  # 期望 1/2
+    print(f"b             = {b}")  # 期望 1/3
+    print(f"a + b         = {a + b}")  # 期望 5/6
+    print(f"Fraction(2, 4) = {Fraction(2, 4)}")  # 期望 1/2  ← 约分生效
 
     print()
-    print(f"a == Fraction(2, 4)  -> {a == Fraction(2, 4)}")            # 期望 True
-    print(f"a == b               -> {a == b}")                         # 期望 False
-    print(f"1/2 + 1/2            -> {Fraction(1, 2) + Fraction(1, 2)}")# 期望 1/1
+    print(f"a == Fraction(2, 4)  -> {a == Fraction(2, 4)}")  # 期望 True
+    print(f"a == b               -> {a == b}")  # 期望 False
+    print(f"1/2 + 1/2            -> {Fraction(1, 2) + Fraction(1, 2)}")  # 期望 1/1
 
     print()
     print("以上任何一行不符合「期望」，就说明还没做完。")
