@@ -36,7 +36,9 @@ class Student:
           - 没有成绩时返回 0.0，避免除以 0 报错
           - 有成绩时返回 sum(self.scores) / len(self.scores)
         """
-        raise NotImplementedError("请实现 average")
+        if not self.scores:
+            return 0.0
+        return sum(self.scores) / len(self.scores)
 
     # ------------------------------------------------------------
     def add_score(self, score: float) -> None:
@@ -45,7 +47,7 @@ class Student:
 
         TODO: 一行搞定（把 raise 删掉）
         """
-        raise NotImplementedError("请实现 add_score")
+        self.scores.append(score)
 
 
 # ================================================================
@@ -57,13 +59,19 @@ if __name__ == "__main__":
     print("=" * 52)
 
     s1 = Student("小明", 20, [90, 80, 100])
-    print(f"s1                        = {s1}")          # 期望 Student(name='小明', age=20, scores=[90, 80, 100])
+    print(
+        f"s1                        = {s1}"
+    )  # 期望 Student(name='小明', age=20, scores=[90, 80, 100])
     print(f"s1.average                = {s1.average}")  # 期望 90.0
     print()
-    print(f"没成绩时的 average         = {Student('小刚', 19).average}")   # 期望 0.0
+    print(f"没成绩时的 average         = {Student('小刚', 19).average}")  # 期望 0.0
     print()
-    print(f"s1 == Student('小红',21,[90,80,100]) -> {s1 == Student('小红', 21, [90, 80, 100])}")  # 期望 False
-    print(f"s1 == Student('小明',20,[90,80,100]) -> {s1 == Student('小明', 20, [90, 80, 100])}")  # 期望 True
+    print(
+        f"s1 == Student('小红',21,[90,80,100]) -> {s1 == Student('小红', 21, [90, 80, 100])}"
+    )  # 期望 False
+    print(
+        f"s1 == Student('小明',20,[90,80,100]) -> {s1 == Student('小明', 20, [90, 80, 100])}"
+    )  # 期望 True
 
     print()
     print("-" * 52)
