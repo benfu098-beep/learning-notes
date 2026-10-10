@@ -28,9 +28,13 @@ class User(TypedDict):
 # ================================================================
 #  任务 1：给这个函数补全类型注解
 # ================================================================
-def process_users(users, default_role, verbose):
+def process_users(
+    users: list[User],
+    default_role: str,
+    verbose: bool,
+) -> dict[str, str]:
     """
-    TODO: 给参数和返回值补上类型注解
+    任务 1：给参数和返回值补全类型注解（已完成）
 
     参数：
       users        —— 用户列表，类型是 list[User]
@@ -40,15 +44,12 @@ def process_users(users, default_role, verbose):
     返回：
       dict[str, str]   —— 映射：姓名 → 角色
 
-    写法参考（Python 3.10+ 推荐）：
-
-        def process_users(
-            users: list[User],
-            default_role: str,
-            verbose: bool,
-        ) -> dict[str, str]:
+    ⭐ 关键理解（你踩的坑）：
+       类型注解是【原地改写函数签名】，不是【新增一个函数】。
+       正确做法：只把 `def f(a, b):` 这一行换成多行带注解的签名，
+                 下面的文档字符串和函数体，一个字都不用动。
     """
-    result = {}
+    result: dict[str, str] = {}
     for u in users:
         result[u["name"]] = u.get("role", default_role)
     if verbose:
@@ -95,8 +96,15 @@ if __name__ == "__main__":
     print("     cd ~/Documents/dev/learning-notes")
     print("     .venv/bin/python -m mypy python/exercises/day2_typing.py")
     print()
-    print("   如果注解补全了，会看到：Success: no issues found")
-    print("   如果故意传错类型，mypy 会报 error（但程序照样能跑）")
+    print("   ⚠️ 注意：这个文件里【故意】留了一处类型错误（就是上面任务 2 的 add）")
+    print("      所以 mypy 会报 2 个 error —— 这是【预期结果】，不是你的 bug！")
+    print()
+    print("   对比一下：")
+    print("     · Python 运行时：add(\"hello\", \"world\") = 'helloworld'，一声不吭")
+    print("     · mypy 静态检查：error: incompatible type \"str\"; expected \"int\"")
+    print()
+    print("   👉 这就是类型提示的全部意义：")
+    print("      把「运行时才会爆的错」，提前到「写代码时」就发现。")
 
     print()
     print("=" * 58)
