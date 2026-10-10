@@ -27,7 +27,10 @@ def fib():
 
     ⚠️ 它会无限产出，绝不能写 list(fib())，必须用 islice 或 break 限制。
     """
-    raise NotImplementedError("请实现 fib")
+    a, b = 1, 1
+    while True:
+        yield a
+        a, b = b, a + b
 
 
 def first_n_squares(n: int):
@@ -36,7 +39,11 @@ def first_n_squares(n: int):
 
     TODO: 用 yield 实现
     """
-    raise NotImplementedError("请实现 first_n_squares")
+    a, b = 0, 0
+    while a < n:
+        yield b * b
+        a += 1
+        b += 1
 
 
 def loud_generator():
