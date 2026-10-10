@@ -43,7 +43,14 @@ def db_transaction():
     ⚠️ 在 except 里只 print 不 raise，调用方就永远不知道出错了。
        这是很危险的做法，生产代码里绝对不能这么写。
     """
-    raise NotImplementedError("请实现 db_transaction")
+    print("BEGIN")
+    try:
+        yield
+    except Exception:
+        print("ROLLBACK")
+        raise
+    else:
+        print("COMMIT")
 
 
 if __name__ == "__main__":
