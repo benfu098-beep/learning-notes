@@ -17,6 +17,7 @@
 | 目录 | 内容 | 说明 |
 |---|---|---|
 | [python/](python/) | Python 速通讲义 | 面向 C/C++ 背景编写 |
+| [速查卡](python/cheatsheet.md) | 语法速查 | 卡住时 10 秒查到答案 |
 | [leetcode/](leetcode/) | 算法题解 | 目标 200–300 题 |
 | [interview/](interview/) | 面试八股 | 含 11 道 LLM 场景题 |
 | [projects/](projects/) | 项目复盘 | 架构决策 + 量化数据 |
