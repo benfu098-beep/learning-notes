@@ -17,14 +17,6 @@ def fib():
     """
     无限斐波那契生成器：1, 1, 2, 3, 5, 8, 13, 21, 34, 55, ...
 
-    TODO: 用 yield 实现（把 raise 删掉）
-
-    提示：
-      a, b = 1, 1
-      while True:
-          yield a
-          a, b = b, a + b      ← Python 能一行同时赋值，不需要临时变量
-
     ⚠️ 它会无限产出，绝不能写 list(fib())，必须用 islice 或 break 限制。
     """
     a, b = 1, 1
@@ -36,8 +28,6 @@ def fib():
 def first_n_squares(n: int):
     """
     产出 0 到 (n-1) 的平方：0, 1, 4, 9, 16, ...
-
-    TODO: 用 yield 实现
     """
     a, b = 0, 0
     while a < n:

@@ -21,8 +21,8 @@ class Student:
     age: int
     scores: list[float] = field(default_factory=list)
     #                       ↑
-    #   ⚠️ 为什么不能直接写 scores: list[float] = [] ？
-    #      先做完练习④，你就彻底明白了。
+    # 用 field(default_factory=list) 而不是 = []：
+    # 默认值只在【函数定义时】求值一次，写成 = [] 会让所有实例共享同一个列表。
 
     # ------------------------------------------------------------
     @property
@@ -30,11 +30,7 @@ class Student:
         """
         平均分（计算属性，用的时候不带括号：s.average）
 
-        TODO: 在这里写代码（把 raise 删掉）
-
-        提示：
-          - 没有成绩时返回 0.0，避免除以 0 报错
-          - 有成绩时返回 sum(self.scores) / len(self.scores)
+        没有成绩时返回 0.0，避免除以 0。
         """
         if not self.scores:
             return 0.0
@@ -44,8 +40,6 @@ class Student:
     def add_score(self, score: float) -> None:
         """
         加一个成绩
-
-        TODO: 一行搞定（把 raise 删掉）
         """
         self.scores.append(score)
 

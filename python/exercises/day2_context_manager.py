@@ -20,28 +20,15 @@ from contextlib import contextmanager
 @contextmanager
 def db_transaction():
     """
-    TODO: 实现它（把 raise 删掉）
+    用 with 管理一次数据库事务。
 
-    提示：
-
-        @contextmanager
-        def db_transaction():
-            print("BEGIN")
-            try:
-                yield              ← 控制权交给 with 代码块
-            except Exception:
-                print("ROLLBACK")
-                raise              ← ⚠️ 必须重新抛出！否则异常被吞掉
-            else:
-                print("COMMIT")
-
-    理解 yield 的位置：
+    yield 的位置语义：
       · yield 之前的代码  ≈ __enter__（进入 with 时执行）
       · yield 之后的代码  ≈ __exit__（离开 with 时执行）
-      · yield 本身会把控制权交给 with 代码块，等它跑完再回来
+      · yield 本身把控制权交给 with 代码块，等它跑完再回来
 
-    ⚠️ 在 except 里只 print 不 raise，调用方就永远不知道出错了。
-       这是很危险的做法，生产代码里绝对不能这么写。
+    ⚠️ 在 except 里必须 raise 重新抛出。
+       只 print 不 raise 会把异常吞掉，调用方永远不知道出错了。
     """
     print("BEGIN")
     try:
