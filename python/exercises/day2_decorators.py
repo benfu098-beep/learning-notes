@@ -26,25 +26,13 @@ def count_calls(func):
     让被装饰的函数多出一个 .calls 属性，记录它被调用了多少次。
 
     用法：
+
         @count_calls
         def hello():
             return "hi"
 
         hello(); hello()
         print(hello.calls)     # 2
-
-    TODO: 实现它（把 raise 删掉）
-
-    提示（三步）：
-      1. @functools.wraps(func)          ← 保留原函数的名字和文档
-         def wrapper(*args, **kwargs):
-             wrapper.calls += 1          ← 计数
-             return func(*args, **kwargs)  ← 调用原函数并返回结果
-      2. wrapper.calls = 0               ← 初始化计数器
-      3. return wrapper                  ← 返回新函数
-
-    ⚠️ wrapper.calls = 0 必须在 return wrapper 之前写，
-       因为 return 之后就再也拿不到 wrapper 这个变量了。
     """
 
     @functools.wraps(func)
@@ -61,33 +49,20 @@ def count_calls(func):
 # ================================================================
 def retry(times: int = 3, delay: float = 0.05):
     """
-    被装饰的函数如果抛异常，就等 delay 秒后重试，最多重试 times 次。
-    最后一次仍失败，就把异常抛出去。
+    被装饰的函数如果抛异常，就等 delay 秒后重试；最后一次仍失败就把异常抛出去。
 
     用法：
+
         @retry(times=3, delay=0.05)
         def flaky():
             ...
 
-    TODO: 实现它（把 raise 删掉）
+    实现要点 —— 带参数的装饰器需要【三层嵌套】：
+      第 1 层  retry(times, delay)   收装饰器自己的参数
+      第 2 层  decorator(func)      收被装饰的函数
+      第 3 层  wrapper(*args, ...)  真正被调用时执行
 
-    提示：带参数的装饰器需要【三层嵌套】
-
-        def retry(times, delay):          ← 第 1 层：接收装饰器的参数
-            def decorator(func):          ← 第 2 层：接收被装饰的函数
-                @functools.wraps(func)
-                def wrapper(*args, **kwargs):   ← 第 3 层：真正被调用时执行
-                    for attempt in range(times):
-                        try:
-                            return func(*args, **kwargs)
-                        except Exception:
-                            if attempt == times - 1:
-                                raise        # 最后一次还失败，抛出去
-                            time.sleep(delay)
-                return wrapper
-            return decorator              ← 注意返回的是 decorator，不是 wrapper
-
-    ⚠️ 最常见的错误：最外层 return 了 wrapper 而不是 decorator。
+    ⚠️ 最外层返回的是 decorator，不是 wrapper。
     """
 
     def decorator(func):
