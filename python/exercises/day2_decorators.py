@@ -46,7 +46,14 @@ def count_calls(func):
     ⚠️ wrapper.calls = 0 必须在 return wrapper 之前写，
        因为 return 之后就再也拿不到 wrapper 这个变量了。
     """
-    raise NotImplementedError("请实现 count_calls")
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        wrapper.calls += 1
+        return func(*args, **kwargs)
+
+    wrapper.calls = 0
+    return wrapper
 
 
 # ================================================================
@@ -82,7 +89,21 @@ def retry(times: int = 3, delay: float = 0.05):
 
     ⚠️ 最常见的错误：最外层 return 了 wrapper 而不是 decorator。
     """
-    raise NotImplementedError("请实现 retry")
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(times):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == times - 1:
+                        raise  # 最后一次还失败，抛出去
+                    time.sleep(delay)
+
+        return wrapper
+
+    return decorator
 
 
 # ================================================================
@@ -96,16 +117,21 @@ if __name__ == "__main__":
     # ---------- ③ ----------
     print("\n【③】@count_calls")
     try:
+
         @count_calls
         def hello():
             return "hi"
 
-        print(f"   刚定义时 hello.calls = {hello.calls}")   # 期望 0
-        hello(); hello(); hello()
-        print(f"   调用 3 次后 = {hello.calls}")             # 期望 3
-        print(f"   函数名还在吗: {hello.__name__}")          # 期望 hello（functools.wraps 的功劳）
+        print(f"   刚定义时 hello.calls = {hello.calls}")  # 期望 0
+        hello()
+        hello()
+        hello()
+        print(f"   调用 3 次后 = {hello.calls}")  # 期望 3
+        print(
+            f"   函数名还在吗: {hello.__name__}"
+        )  # 期望 hello（functools.wraps 的功劳）
 
-        ok = (hello.calls == 3 and hello.__name__ == "hello")
+        ok = hello.calls == 3 and hello.__name__ == "hello"
         print(f"   {'✅ 通过' if ok else '❌ 不对'}")
     except NotImplementedError as e:
         print(f"   ⏳ {e}")
@@ -125,7 +151,7 @@ if __name__ == "__main__":
         result = flaky()
         print(f"   返回值: {result}")
         print(f"   实际尝试次数: {counter['n']}")
-        ok1 = (result == "第三次成功了" and counter["n"] == 3)
+        ok1 = result == "第三次成功了" and counter["n"] == 3
         print(f"   {'✅ 通过' if ok1 else '❌ 不对'}")
     except NotImplementedError as e:
         print(f"   ⏳ {e}")
@@ -134,6 +160,7 @@ if __name__ == "__main__":
     # ---------- ⑥ 边界：一直失败要抛异常 ----------
     print("\n【⑥-2】一直失败时，应该把异常抛出来（而不是静默返回 None）")
     try:
+
         @retry(times=2, delay=0.01)
         def always_fail():
             raise RuntimeError("永远失败")
