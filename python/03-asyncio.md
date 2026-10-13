@@ -1,5 +1,7 @@
 # Python 速通 · 第 3 天：asyncio 异步编程
 
+> 📌 **并发下载器**和**生产者-消费者**两个模式的详细图解，见 [03b-asyncio-patterns.md](03b-asyncio-patterns.md)
+
 > **目标**：理解事件循环，能写出正确的异步代码，并知道 FastAPI 里 `async def` 和 `def` 该用哪个
 > **预计**：4–5 小时（含练习）
 >
