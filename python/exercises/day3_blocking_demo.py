@@ -18,7 +18,7 @@ import time
 #  A. 错误写法：async def 里用【同步阻塞】的 time.sleep
 # ================================================================
 async def blocking_task(name, delay):
-    time.sleep(delay)              # ❌ 阻塞！这期间事件循环完全停摆
+    time.sleep(delay)  # ❌ 阻塞！这期间事件循环完全停摆
     return f"{name} 完成"
 
 
@@ -36,7 +36,7 @@ async def run_blocking():
 #  B. 正确写法：用【异步】的 await asyncio.sleep
 # ================================================================
 async def async_task(name, delay):
-    await asyncio.sleep(delay)     # ✅ 等待时让出控制权，别的任务能跑
+    await asyncio.sleep(delay)  # ✅ 等待时让出控制权，别的任务能跑
     return f"{name} 完成"
 
 
@@ -92,13 +92,13 @@ async def main():
 #  我的记录（自己填）
 # ================================================================
 #  跑之前我的预测：
-#    A (time.sleep)          = ______ 秒
-#    B (asyncio.sleep)       = ______ 秒
+#    A (time.sleep)          = 3秒
+#    B (asyncio.sleep)       = 1秒
 #
 #  实际结果：
-#    A = ______ 秒    B = ______ 秒
+#    A = 3.00 秒    B = 1.00 秒
 #
-#  用你自己的话解释为什么 A 会慢（不许抄上面的）：
+#  用你自己的话解释为什么 A 会慢（不许抄上面的）：A期间，事件循环被阻塞，其他任务无法执行，只能排队等待。
 #
 #
 #
