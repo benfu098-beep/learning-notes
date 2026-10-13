@@ -29,21 +29,10 @@ async def fetch_one(client: httpx.AsyncClient, url: str) -> dict:
     """
     请求单个 URL，返回结果摘要。任何异常都不能往外抛。
 
-    成功时返回： {"url": url, "ok": True,  "bytes": <响应体字节数>}
-    失败时返回： {"url": url, "ok": False, "error": "<异常类型>: <信息>"}
+    成功： {"url": url, "ok": True,  "bytes": <响应体字节数>}
+    失败： {"url": url, "ok": False, "error": "<异常类型>: <信息>"}
 
-    TODO: 实现它（把 raise 删掉）
-
-    提示：
-
-        try:
-            resp = await client.get(url)
-            resp.raise_for_status()        # 非 2xx 会抛 httpx.HTTPStatusError
-            return {"url": url, "ok": True, "bytes": len(resp.content)}
-        except Exception as e:
-            return {"url": url, "ok": False, "error": f"{type(e).__name__}: {e}"}
-
-    ⚠️ 关键是【不让异常冒出去】—— 否则 gather 会因为一个失败而整体崩掉。
+    ⚠️ 关键是不让异常冒出去 —— 否则 gather 会因为一个失败而整体崩掉。
     """
     try:
         resp = await client.get(url)
@@ -58,25 +47,12 @@ async def fetch_one(client: httpx.AsyncClient, url: str) -> dict:
 # ================================================================
 async def fetch_all_concurrent() -> tuple[list, float]:
     """
-    并发请求 URLS 里的所有地址。
+    并发请求 URLS 里的所有地址，返回 (结果列表, 耗时秒数)。
 
-    返回： (结果列表, 耗时秒数)
-
-    TODO: 实现它（把 raise 删掉）
-
-    提示：
-
-        t0 = time.perf_counter()
-        async with httpx.AsyncClient(timeout=3.0) as client:
-            async with asyncio.timeout(3):                  # 整体超时保护
-                results = await asyncio.gather(
-                    *(fetch_one(client, u) for u in URLS)
-                )
-        return list(results), time.perf_counter() - t0
-
-    注意：
-      · client 只建一个，放在 async with 里，所有请求共用
-      · asyncio.timeout 是 Python 3.11+ 的写法（你用的是 3.12）
+    要点：
+      · client 只建一个，所有请求共用（复用连接池）
+      · 用 asyncio.gather 并发，结果按【传入顺序】返回
+      · asyncio.timeout 提供整体超时保护（3.11+）
     """
     t0 = time.perf_counter()
     async with httpx.AsyncClient(timeout=3.0) as client:

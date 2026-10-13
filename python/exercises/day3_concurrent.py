@@ -27,7 +27,6 @@ async def task(name, sec):
 async def main():
     t0 = time.perf_counter()
 
-    # TODO: 把下面三行【串行】的 await 改成【并发】
     results = await asyncio.gather(
         task("A", 1),
         task("B", 1),

@@ -32,20 +32,7 @@ async def producer(queue: asyncio.Queue) -> None:
     每 0.5 秒往队列放一个数字（0 到 PRODUCE_COUNT-1），
     最后放 CONSUMER_COUNT 个 None 作为结束信号。
 
-    TODO: 实现它（把 raise 删掉）
-
-    提示：
-
-        for i in range(PRODUCE_COUNT):
-            await asyncio.sleep(0.5)
-            await queue.put(i)
-            print(f"  [生产者] 放入 {i}")
-
-        for _ in range(CONSUMER_COUNT):      # ⚠️ 每个消费者一个
-            await queue.put(None)
-        print("  [生产者] 结束")
-
-    注意：queue.put() 是【异步】的（队列满时会等待），要写 await。
+    ⚠️ 每个消费者需要一个 None，否则会有消费者永远卡在 get() 上。
     """
     for i in range(PRODUCE_COUNT):
         await asyncio.sleep(0.5)
@@ -65,23 +52,6 @@ async def consumer(name: str, queue: asyncio.Queue) -> list:
     不断从队列取数字，每处理一个花 0.3 秒，直到拿到 None（结束信号）退出。
 
     返回：这个消费者处理过的所有数字组成的列表
-
-    TODO: 实现它（把 raise 删掉）
-
-    提示：
-
-        got = []
-        while True:
-            item = await queue.get()         # 异步取
-            if item is None:                 # 结束信号
-                print(f"  [{name}] 收到结束信号，退出")
-                break
-            got.append(item)
-            print(f"  [{name}] 处理 {item}")
-            await asyncio.sleep(0.3)         # 模拟处理耗时
-        return got
-
-    注意：queue.get() 也是异步的。
     """
     got = []
     while True:
