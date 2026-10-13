@@ -16,7 +16,7 @@
 import asyncio
 import time
 
-TARGET = 1.5      # 耗时低于这个值算通过（串行是 3 秒）
+TARGET = 1.5  # 耗时低于这个值算通过（串行是 3 秒）
 
 
 async def task(name, sec):
@@ -28,12 +28,13 @@ async def main():
     t0 = time.perf_counter()
 
     # TODO: 把下面三行【串行】的 await 改成【并发】
-    r1 = await task("A", 1)
-    r2 = await task("B", 1)
-    r3 = await task("C", 1)
-
+    results = await asyncio.gather(
+        task("A", 1),
+        task("B", 1),
+        task("C", 1),
+    )
     cost = time.perf_counter() - t0
-    return [r1, r2, r3], cost
+    return results, cost
 
 
 if __name__ == "__main__":
