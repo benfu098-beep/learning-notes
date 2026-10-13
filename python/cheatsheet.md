@@ -214,7 +214,87 @@ add("hello", "world")     # 不报错！返回 "helloworld"
 
 ---
 
-## 五、我总是忘记的（自己往里加）
+## 五、时间处理（datetime）
+
+### ⚠️ 最经典的混淆：秒表 vs 时钟
+
+```python
+import time
+from datetime import datetime
+
+time.perf_counter()   # 49688.78   ← 秒表读数，不是时间！只能用来算差值
+datetime.now()        # 2026-10-13 08:25:54   ← ✅ 这才是当前时间
+```
+
+| 你想干什么 | 用什么 |
+|---|---|
+| 显示 / 记录当前时间 | `datetime.now()` ⭐ |
+| 得到 Unix 时间戳 | `time.time()` |
+| 测量代码跑了多久 | `time.perf_counter()` ⭐ |
+
+`perf_counter()` 永远是「两次读数相减」，单独打印毫无意义：
+
+```python
+start = time.perf_counter()
+do_something()
+cost = time.perf_counter() - start     # ← 差值才是耗时
+print(f"耗时 {cost:.4f} 秒")
+```
+
+> 为什么不用 `time.time()` 测耗时？因为它会被系统时间调整影响，
+> 结果可能变成负数。`perf_counter()` 不受影响——这就是它存在的意义。
+
+### datetime 常用操作
+
+```python
+from datetime import datetime, timezone, timedelta
+
+now = datetime.now()                     # 本地时间
+utc = datetime.now(timezone.utc)         # 带时区（生产环境推荐）
+utc.astimezone()                         # 转成本地时区
+
+# 格式化
+now.strftime("%Y-%m-%d %H:%M:%S")        # '2026-10-13 08:25:54'
+f"{now:%Y-%m-%d}"                        # f-string 里直接格式化
+now.date()                               # 只要日期
+now.time()                               # 只要时间
+
+# 加减与差值
+now + timedelta(days=1)
+now - timedelta(weeks=1)
+(tomorrow - now).total_seconds()         # 差的秒数
+
+# 字符串互转
+datetime.strptime("2026-10-13 08:30", "%Y-%m-%d %H:%M")
+now.isoformat()                          # '2026-10-13T08:25:54' ← API 传时间用这个
+```
+
+### 常用格式符
+
+| 符 | 含义 | 例 |
+|---|---|---|
+| `%Y` | 四位年 | 2026 |
+| `%m` | 月 | 10 |
+| `%d` | 日 | 13 |
+| `%H` | 时（24 小时制） | 08 |
+| `%M` | 分 | 25 |
+| `%S` | 秒 | 54 |
+
+### ⚠️ 写后端时的一条铁律
+
+**存时间、传时间一律用 UTC + ISO 8601，只在展示给用户时才转本地时区。**
+
+否则跨时区、夏令时、服务器时区不一致，全是坑。
+
+`ruff` 会提醒你：
+
+```
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+```
+
+---
+
+## 六、我总是忘记的（自己往里加）
 
 > 每次写代码时查过的东西，就补一条到这里。
 > 记法：**「什么时候用」比「怎么写」更重要。**
@@ -226,7 +306,7 @@ add("hello", "world")     # 不报错！返回 "helloworld"
 
 ---
 
-## 六、容易忘的命令
+## 七、容易忘的命令
 
 ```bash
 # Python 环境

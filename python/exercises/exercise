@@ -1,0 +1,22 @@
+import asyncio
+import time
+
+
+async def fetch(name, delay):
+    await asyncio.sleep(delay)
+    return f"{name} 完成"
+
+
+async def main():
+    start = time.perf_counter()
+    results = await asyncio.gather(
+        fetch("A", 1),
+        fetch("B", 2),
+        fetch("C", 1),
+    )
+    print(results)  # ['A 完成', 'B 完成', 'C 完成']
+    print(f"{start:.2f}s")  # 约 1.0 秒！不是 3 秒
+    print(f"{time.perf_counter():.2f}s")
+
+
+asyncio.run(main())
