@@ -47,7 +47,14 @@ async def producer(queue: asyncio.Queue) -> None:
 
     注意：queue.put() 是【异步】的（队列满时会等待），要写 await。
     """
-    raise NotImplementedError("请实现 producer")
+    for i in range(PRODUCE_COUNT):
+        await asyncio.sleep(0.5)
+        await queue.put(i)
+        print(f"  [生产者] 放入 {i}")
+
+    for _ in range(CONSUMER_COUNT):  # ⚠️ 每个消费者一个
+        await queue.put(None)
+    print("  [生产者] 结束")
 
 
 # ================================================================
@@ -76,7 +83,16 @@ async def consumer(name: str, queue: asyncio.Queue) -> list:
 
     注意：queue.get() 也是异步的。
     """
-    raise NotImplementedError("请实现 consumer")
+    got = []
+    while True:
+        item = await queue.get()  # 异步取
+        if item is None:  # 结束信号
+            print(f"  [{name}] 收到结束信号，退出")
+            break
+        got.append(item)
+        print(f"  [{name}] 处理 {item}")
+        await asyncio.sleep(0.3)  # 模拟处理耗时
+    return got
 
 
 # ================================================================
