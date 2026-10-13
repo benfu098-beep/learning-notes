@@ -1,0 +1,15 @@
+import asyncio
+import time
+
+
+async def good():
+    await asyncio.sleep(1)  # ✓ 等待时让出控制权
+
+
+async def main():
+    start = time.perf_counter()
+    await asyncio.gather(good(), good(), good())
+    print(f"耗时 {time.perf_counter() - start:.2f}s")  # 1.00 秒 ✓
+
+
+asyncio.run(main())
