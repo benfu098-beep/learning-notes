@@ -45,7 +45,12 @@ async def fetch_one(client: httpx.AsyncClient, url: str) -> dict:
 
     ⚠️ 关键是【不让异常冒出去】—— 否则 gather 会因为一个失败而整体崩掉。
     """
-    raise NotImplementedError("请实现 fetch_one")
+    try:
+        resp = await client.get(url)
+        resp.raise_for_status()
+        return {"url": url, "ok": True, "bytes": len(resp.content)}
+    except Exception as e:
+        return {"url": url, "ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
 # ================================================================
@@ -73,7 +78,11 @@ async def fetch_all_concurrent() -> tuple[list, float]:
       · client 只建一个，放在 async with 里，所有请求共用
       · asyncio.timeout 是 Python 3.11+ 的写法（你用的是 3.12）
     """
-    raise NotImplementedError("请实现 fetch_all_concurrent")
+    t0 = time.perf_counter()
+    async with httpx.AsyncClient(timeout=3.0) as client:
+        async with asyncio.timeout(3):  # 整体超时保护
+            results = await asyncio.gather(*(fetch_one(client, u) for u in URLS))
+    return list(results), time.perf_counter() - t0
 
 
 # ================================================================
