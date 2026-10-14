@@ -2,29 +2,39 @@
 
 2028 届 CS 学生的求职学习笔记。目标：**2027 年 3–5 月拿到暑期实习 offer（AI 应用开发 / Python 后端）**。
 
-## ▶️ 下次从这里开始（2026-10-12 周一）
+## ▶️ 下次从这里开始（2026-10-15 周四 · 进入 W2）
 
-**当前进度**：Day 1 全部完成 · Day 2 完成 6/7（只差装饰器）
+**当前进度**：地基阶段（Day 1–3）**代码练习全部完成** ✅ · 准备进入 W2（Web 核心）
 
-**下次要做的三件事**（预计 2–3 小时）：
+### 下次要做的四件事
 
-- [ ] **1. 看 asyncio 视频 15 分钟** —— [码农高天：asyncio 的理解与入门](https://www.bilibili.com/video/BV1oa411b7c9/)
-- [ ] **2. 做装饰器练习** —— [python/exercises/day2_decorators.py](python/exercises/day2_decorators.py)
-      先合上代码默写 `count_calls`，写不出来瞄一眼再默写，然后实现它
-- [ ] **3. 提交** —— `git add -A && git commit -m "完成第2天练习3" && git push`
+- [ ] **1. 补完 ⑤ 思考题**（15 分钟）—— [day3_reflection.md](python/exercises/day3_reflection.md)
+      用【你自己的话】把 4 道题写一遍。这是面试练习，不是抄写。
+- [ ] **2. 看视频** —— [黑马程序员 FastAPI 从入门到实战](https://www.bilibili.com/video/BV1zV2QBtE39/)
+      只看「路由 / Pydantic / 依赖注入」这几部分（**别通看 15 小时**）
+- [ ] **3. 读讲义** —— [python/04-fastapi-basics.md](python/04-fastapi-basics.md)
+      重点看第 3 节（三种参数）、第 4 节（Pydantic）、第 5 节（Depends）、第 7 节（分层结构）
+- [ ] **4. 做练习** —— [w2_01_routing.py](python/exercises/w2_01_routing.py)、[w2_02_pydantic.py](python/exercises/w2_02_pydantic.py)
+      用 TestClient 自测，不需要启动服务器
 
-**做完之后**：Day 3 讲义（[python/03-asyncio.md](python/03-asyncio.md)）+ 它的 3 个练习，地基阶段就结束了。
+### 周次对照
 
-> 装饰器参考视频：[蜗牛学苑 Python 高级进阶](https://www.bilibili.com/video/BV1kP41117Mi/) 里「装饰器」那几 P（**只看那几集，别通看**）。
+| 周 | 日期 | 主题 |
+|---|---|---|
+| ~~W0–W1~~ | ~~10/08–10/18~~ | ~~地基：Python 速通 + asyncio~~ ✅ **已完成，提前 4 天** |
+| **W2** | 10/19–10/25 | **FastAPI 入门**（你 10/15 就开始了） |
+| W3 | 10/26–11/01 | 数据库（PostgreSQL + SQLAlchemy） |
 
 ---
 
 ## 进度看板
 
+## 进度看板
+
 | 阶段 | 周期 | 主题 | 状态 |
 |---|---|---|---|
-| 一 · 地基 | 10/08–10/18 | Python 速通 + 异步编程 | 🔵 Day1 ✅ / Day2 6-7 / Day3 ⬜ |
-| 二 · Web 核心 | 10/19–11/15 | FastAPI + PostgreSQL + Redis | ⬜ |
+| 一 · 地基 | 10/08–10/18 | Python 速通 + 异步编程 | ✅ **完成**（提前 4 天） |
+| 二 · Web 核心 | 10/19–11/15 | FastAPI + PostgreSQL + Redis | 🔵 进行中 |
 | 三 · 项目 A | 11/16–12/27 | LLM 统一网关 | ⬜ |
 | 四 · 项目 B | 12/28–02/07 | RAG 知识库平台 | ⬜ |
 | 五 · 冲刺 | 02/08–02/28 | 八股 + 简历 + 模拟面试 | ⬜ |
