@@ -294,7 +294,115 @@ DTZ005 `datetime.datetime.now()` called without a `tz` argument
 
 ---
 
-## 六、我总是忘记的（自己往里加）
+## 六、FastAPI 速查
+
+### 三种参数来源（最重要）
+
+| 参数长什么样 | 来源 | 请求写法 |
+|---|---|---|
+| 名字在路径 `{}` 里 | **路径参数** | `GET /users/1` |
+| 类型是 Pydantic 模型 | **请求体** | `POST /users` + JSON body |
+| 其他（基本类型/有默认值） | **查询参数** | `GET /items?skip=0` |
+
+**判断口诀**：FastAPI 靠参数的类型和位置自动分类，你不需要声明来源。
+
+```python
+from typing import Annotated
+from fastapi import FastAPI, HTTPException, Query
+from pydantic import BaseModel, Field
+
+app = FastAPI()
+
+# ① 路径参数 —— 名字在 {} 里
+@app.get("/users/{user_id}")
+async def get_user(user_id: int):          # /users/abc → 自动 422
+    name = USERS.get(user_id)              # 单一数据源，一次查找
+    if name is None:
+        raise HTTPException(status_code=404, detail=f"用户 {user_id} 不存在")
+    return {"user_id": user_id, "name": name}
+
+# ② 查询参数 —— 不在路径里，自动变成 ?key=value
+@app.get("/items")
+async def list_items(
+    skip: int = 0,                                   # 有默认值 → 可选
+    limit: Annotated[int, Query(ge=1, le=100)] = 10, # 加约束
+    q: str | None = None,                            # 允许 None → 可选
+):
+    data = [x for x in ITEMS if q in x["name"]] if q else ITEMS
+    return {"total": len(data), "items": data[skip : skip + limit]}
+
+# ③ 请求体 —— 参数类型是 Pydantic 模型
+class ItemIn(BaseModel):
+    name: str
+    price: float = Field(gt=0)                       # 必须 > 0
+
+@app.post("/items", status_code=201)
+async def create_item(item: ItemIn):      # 自动解析 JSON body + 校验
+    return {"created": item.model_dump()}
+```
+
+### 状态码（常用的几个）
+
+| 码 | 含义 | 什么时候用 |
+|---|---|---|
+| 200 | OK | 默认，查询成功 |
+| **201** | Created | POST 新建资源成功 |
+| 400 | Bad Request | 业务参数不对 |
+| 401 | Unauthorized | 没登录 / token 无效 |
+| 403 | Forbidden | 登录了但没权限 |
+| 404 | Not Found | 资源不存在 |
+| **422** | Unprocessable Entity | **校验失败，FastAPI 自动返回** |
+| 500 | Internal Server Error | 服务端 bug |
+
+### 抛业务异常
+
+```python
+from fastapi import HTTPException
+
+raise HTTPException(status_code=404, detail="用户不存在")
+# 前端收到： {"detail": "用户不存在"}
+```
+
+### Pydantic 常用
+
+```python
+class M(BaseModel):
+    a: str = Field(min_length=1, max_length=20)
+    b: int = Field(ge=0, le=150)                    # 0 <= b <= 150
+    c: str = Field(pattern=r"^[\w.+-]+@[\w-]+\.[\w.]+$")
+    d: list[str] = Field(default_factory=list)      # ⚠️ 不要写 = []
+
+m.model_dump()          # 模型 → dict（返回 JSON 前常用）
+m.model_dump_json()     # 模型 → JSON 字符串
+M.model_validate({...}) # dict → 模型
+```
+
+### 自动校验帮你省了什么
+
+| 你只写了 | FastAPI 自动做了 |
+|---|---|
+| `user_id: int` | `"3"` → `3`；`"abc"` → 422 |
+| `item: ItemIn` | 解析 JSON body；缺字段 → 422；类型错 → 422 |
+| `Annotated[int, Query(le=100)]` | 超过 100 → 422 |
+
+422 的响应会精确指出哪个字段出错：
+
+```json
+{"detail": [{"loc": ["body", "price"], "msg": "Field required"}]}
+```
+
+### 常见坑
+
+| 坑 | 表现 | 解法 |
+|---|---|---|
+| 用了全局 Python | `ModuleNotFoundError` | 用 `.venv/bin/python` |
+| 在 `async def` 里用同步库 | 并发能力崩掉 | 改 `def`，或用异步库 |
+| 忘了 `response_model` | 密码等敏感字段泄露 | 见练习 2 任务 2 |
+| 可变默认值 `= []` | 所有实例共享同一个列表 | 用 `Field(default_factory=list)` |
+
+---
+
+## 七、我总是忘记的（自己往里加）
 
 > 每次写代码时查过的东西，就补一条到这里。
 > 记法：**「什么时候用」比「怎么写」更重要。**
@@ -306,7 +414,7 @@ DTZ005 `datetime.datetime.now()` called without a `tz` argument
 
 ---
 
-## 七、容易忘的命令
+## 八、容易忘的命令
 
 ```bash
 # Python 环境
