@@ -81,7 +81,11 @@ async def current_user(x_token: str = Header(...)) -> str:
       · 参数名 x_token 会自动映射到请求头 X-Token（下划线转中划线，大小写不敏感）
       · 里面的 ... 表示「必须提供」——不传会直接 422
     """
-    raise NotImplementedError("请实现 current_user")
+    user = TOKENS.get(x_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="无效的 token")
+    return user
+
 
 
 # ================================================================
@@ -106,7 +110,7 @@ async def get_me(user: str = Depends(current_user)) -> Resp:
     注意：参数 user 由 Depends(current_user) 自动注入 ——
           你不用自己调 current_user，FastAPI 会在调用接口前帮你执行它。
     """
-    raise NotImplementedError("请实现 get_me")
+    return Resp(data={"user": user})
 
 
 @users_router.get("/{uid}")
@@ -126,7 +130,10 @@ async def get_user(uid: int, user: str = Depends(current_user)) -> Resp:
             raise BizError(404, f"用户 {uid} 不存在")
         return Resp(data=info)
     """
-    raise NotImplementedError("请实现 get_user")
+    info = USERS.get(uid)
+    if info is None:
+        raise BizError(404, f"用户 {uid} 不存在")
+    return Resp(data=info)
 
 
 @users_router.post("/{uid}/withdraw")
@@ -145,7 +152,15 @@ async def withdraw(uid: int, body: WithdrawIn, user: str = Depends(current_user)
     提示：先判存在，再判金额，最后判余额。
           扣款用 USERS[uid]["balance"] -= body.amount
     """
-    raise NotImplementedError("请实现 withdraw")
+    info = USERS.get(uid)
+    if info is None:
+        raise BizError(404, f"用户 {uid} 不存在")
+    if body.amount <= 0:
+        raise BizError(400, "金额必须大于 0")
+    if info["balance"] < body.amount:
+        raise BizError(1001, "余额不足")
+    info["balance"] -= body.amount
+    return Resp(data={"balance": info["balance"]})
 
 
 public_router = APIRouter(prefix="/public", tags=["公开"])
@@ -158,7 +173,7 @@ async def health() -> Resp:
 
     TODO
     """
-    raise NotImplementedError("请实现 health")
+    return Resp(data={"status": "ok"})
 
 
 # 统一注册到 app（这一步就是 APIRouter 的意义）
@@ -190,7 +205,10 @@ async def biz_error_handler(request: Request, exc: BizError) -> JSONResponse:
       "Internal Server Error"，既没有错误码也没有提示信息。
       统一处理之后，前端只需要写一套错误处理逻辑。
     """
-    raise NotImplementedError("请实现 biz_error_handler")
+    return JSONResponse(
+        status_code=400,
+        content={"code": exc.code, "message": exc.message, "data": None},
+    )
 
 
 # ================================================================
