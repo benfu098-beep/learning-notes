@@ -27,7 +27,7 @@ ITEMS = [{"name": f"item-{i}", "price": float(i * 10)} for i in range(1, 21)]
 @app.get("/users/{user_id}")
 async def get_user(user_id: int):
     """
-        根据 user_id 查询用户；不存在则返回 404。
+    根据 user_id 查询用户；不存在则返回 404。
     """
     id_list = [1,2,3]
     if user_id not in id_list:
@@ -41,10 +41,10 @@ async def get_user(user_id: int):
 @app.get("/items")
 async def list_items(skip: int = 0, limit: int = 10, q: str | None = None):
     """
-        分页列出商品，支持按关键词 q 过滤。
+    分页列出商品，支持按关键词 q 过滤。
 
-        返回 {"total": 过滤后的总条数, "items": 当前页数据}。
-        （total 必须是【过滤后】的总数，否则前端算不出页数。）
+    返回 {"total": 过滤后的总条数, "items": 当前页数据}。
+    （total 必须是【过滤后】的总数，否则前端算不出页数。）
     """
     data = [x for x in ITEMS if q in x["name"]] if q else ITEMS
     page = data[skip : skip + limit]
@@ -62,7 +62,7 @@ class ItemIn(BaseModel):
 @app.post("/items", status_code=201)
 async def create_item(item: ItemIn):
     """
-        新建商品。请求体由 ItemIn 模型自动校验，无需手写校验代码。
+    新建商品。请求体由 ItemIn 模型自动校验，无需手写校验代码。
     """
     return {"created": item.model_dump()}
 
