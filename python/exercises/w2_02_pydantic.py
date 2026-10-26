@@ -21,7 +21,7 @@ app = FastAPI(title="W2 练习2：Pydantic")
 # ================================================================
 class UserIn(BaseModel):
     """
-创建用户的请求体模型，带字段约束。
+        创建用户的请求体模型，带字段约束。
     """
     name: str = Field(min_length=1, max_length=20)
     age: int = Field(ge=0, le=150)
@@ -47,10 +47,10 @@ class UserOut(BaseModel):
 @app.get("/users/{uid}", response_model=UserOut)
 async def get_user(uid: int):
     """
-查询用户信息。
+        查询用户信息。
 
-response_model=UserOut 会自动过滤掉 db_row 里未声明的字段
-（password、internal_note），这是防数据泄露的关键手段。
+        response_model=UserOut 会自动过滤掉 db_row 里未声明的字段
+        （password、internal_note），这是防数据泄露的关键手段。
     """
     db_row = {
         "id": uid,

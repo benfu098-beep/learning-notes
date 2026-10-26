@@ -63,10 +63,10 @@ class WithdrawIn(BaseModel):
 # ================================================================
 async def current_user(x_token: str = Header(...)) -> str:
     """
-从请求头 X-Token 读取并校验 token，返回用户名。
+        从请求头 X-Token 读取并校验 token，返回用户名。
 
-各接口通过 Depends(current_user) 复用它；校验失败直接 401，
-接口函数根本不会被执行。
+        各接口通过 Depends(current_user) 复用它；校验失败直接 401，
+        接口函数根本不会被执行。
     """
     user = TOKENS.get(x_token)
     if user is None:
@@ -90,7 +90,7 @@ users_router = APIRouter(prefix="/users", tags=["用户"])
 @users_router.get("/me")
 async def get_me(user: str = Depends(current_user)) -> Resp:
     """
-返回当前登录用户（user 由 Depends 自动注入）。
+        返回当前登录用户（user 由 Depends 自动注入）。
     """
     return Resp(data={"user": user})
 
@@ -98,7 +98,7 @@ async def get_me(user: str = Depends(current_user)) -> Resp:
 @users_router.get("/{uid}")
 async def get_user(uid: int, user: str = Depends(current_user)) -> Resp:
     """
-查询指定用户；不存在则抛 BizError(404)。
+        查询指定用户；不存在则抛 BizError(404)。
     """
     info = USERS.get(uid)
     if info is None:
@@ -109,9 +109,9 @@ async def get_user(uid: int, user: str = Depends(current_user)) -> Resp:
 @users_router.post("/{uid}/withdraw")
 async def withdraw(uid: int, body: WithdrawIn, user: str = Depends(current_user)) -> Resp:
     """
-取款。
+        取款。
 
-校验顺序不能乱：用户存在 → 金额合法 → 余额充足。
+        校验顺序不能乱：用户存在 → 金额合法 → 余额充足。
     """
     info = USERS.get(uid)
     if info is None:
@@ -130,7 +130,7 @@ public_router = APIRouter(prefix="/public", tags=["公开"])
 @public_router.get("/health")
 async def health() -> Resp:
     """
-健康检查，不需要认证。
+        健康检查，不需要认证。
     """
     return Resp(data={"status": "ok"})
 
@@ -146,8 +146,8 @@ app.include_router(public_router)
 @app.exception_handler(BizError)
 async def biz_error_handler(request: Request, exc: BizError) -> JSONResponse:
     """
-把任何地方抛出的 BizError 统一转成
-{code, message, data} 格式，HTTP 状态码固定 400。
+        把任何地方抛出的 BizError 统一转成
+        {code, message, data} 格式，HTTP 状态码固定 400。
     """
     return JSONResponse(
         status_code=400,
