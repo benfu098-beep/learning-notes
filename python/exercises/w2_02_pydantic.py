@@ -21,15 +21,7 @@ app = FastAPI(title="W2 练习2：Pydantic")
 # ================================================================
 class UserIn(BaseModel):
     """
-    TODO: 给下面三个字段加上 Field 约束
-      name  → 长度 1 ~ 20
-      age   → 0 <= age <= 150
-      email → 用 pattern 简单校验格式：r"^[\\w.+-]+@[\\w-]+\\.[\\w.]+$"
-
-    写法示例：  name: str = Field(min_length=1, max_length=20)
-
-    注意 tags 已经写好了，是给你示范 default_factory 的用法
-    （Day 1 学过的可变默认值坑，这里是它的官方解法）
+创建用户的请求体模型，带字段约束。
     """
     name: str = Field(min_length=1, max_length=20)
     age: int = Field(ge=0, le=150)
@@ -39,7 +31,7 @@ class UserIn(BaseModel):
 
 @app.post("/users", status_code=201)
 async def create_user(user: UserIn):
-    """TODO: 返回 user.model_dump()"""
+    """返回接收到的用户数据。"""
     return user.model_dump()
 
 
@@ -55,11 +47,10 @@ class UserOut(BaseModel):
 @app.get("/users/{uid}", response_model=UserOut)
 async def get_user(uid: int):
     """
-    假装这是数据库里查出来的一整行（含敏感字段）。
+查询用户信息。
 
-    TODO: 直接 return db_row，让 response_model 帮你过滤
-
-    要求：接口返回的 JSON 里【不能】出现 password 和 internal_note
+response_model=UserOut 会自动过滤掉 db_row 里未声明的字段
+（password、internal_note），这是防数据泄露的关键手段。
     """
     db_row = {
         "id": uid,
@@ -79,13 +70,13 @@ class Address(BaseModel):
 
 
 class UserWithAddress(BaseModel):
-    """TODO: 定义 name: str 和 address: Address"""
+    """带嵌套地址的用户模型。"""
     name: str
     address: Address
 
 @app.post("/users-with-address", status_code=201)
 async def create_with_address(u: UserWithAddress):
-    """TODO: 返回 u.model_dump()"""
+    """返回接收到的数据（含嵌套的 address）。"""
     return u.model_dump()
 
 

@@ -63,23 +63,10 @@ class WithdrawIn(BaseModel):
 # ================================================================
 async def current_user(x_token: str = Header(...)) -> str:
     """
-    从请求头 X-Token 里读出 token，验证并返回用户名。
+从请求头 X-Token 读取并校验 token，返回用户名。
 
-    要求：
-      · token 不在 TOKENS 里 → raise HTTPException(401, "无效的 token")
-      · token 有效 → 返回用户名
-
-    TODO
-
-    提示：
-        user = TOKENS.get(x_token)
-        if user is None:
-            raise HTTPException(status_code=401, detail="无效的 token")
-        return user
-
-    理解 Header(...)：
-      · 参数名 x_token 会自动映射到请求头 X-Token（下划线转中划线，大小写不敏感）
-      · 里面的 ... 表示「必须提供」——不传会直接 422
+各接口通过 Depends(current_user) 复用它；校验失败直接 401，
+接口函数根本不会被执行。
     """
     user = TOKENS.get(x_token)
     if user is None:
@@ -103,12 +90,7 @@ users_router = APIRouter(prefix="/users", tags=["用户"])
 @users_router.get("/me")
 async def get_me(user: str = Depends(current_user)) -> Resp:
     """
-    返回当前登录用户。要求： return Resp(data={"user": user})
-
-    TODO
-
-    注意：参数 user 由 Depends(current_user) 自动注入 ——
-          你不用自己调 current_user，FastAPI 会在调用接口前帮你执行它。
+返回当前登录用户（user 由 Depends 自动注入）。
     """
     return Resp(data={"user": user})
 
@@ -116,19 +98,7 @@ async def get_me(user: str = Depends(current_user)) -> Resp:
 @users_router.get("/{uid}")
 async def get_user(uid: int, user: str = Depends(current_user)) -> Resp:
     """
-    查询某个用户。
-
-    要求：
-      · 存在 → return Resp(data=USERS[uid])
-      · 不存在 → raise BizError(404, f"用户 {uid} 不存在")
-
-    TODO
-
-    提示：
-        info = USERS.get(uid)
-        if info is None:
-            raise BizError(404, f"用户 {uid} 不存在")
-        return Resp(data=info)
+查询指定用户；不存在则抛 BizError(404)。
     """
     info = USERS.get(uid)
     if info is None:
@@ -139,18 +109,9 @@ async def get_user(uid: int, user: str = Depends(current_user)) -> Resp:
 @users_router.post("/{uid}/withdraw")
 async def withdraw(uid: int, body: WithdrawIn, user: str = Depends(current_user)) -> Resp:
     """
-    取款。
+取款。
 
-    要求：
-      · 用户不存在 → raise BizError(404, f"用户 {uid} 不存在")
-      · 金额 <= 0   → raise BizError(400, "金额必须大于 0")
-      · 余额不足     → raise BizError(1001, "余额不足")
-      · 成功         → 扣减余额，return Resp(data={"balance": 新余额})
-
-    TODO
-
-    提示：先判存在，再判金额，最后判余额。
-          扣款用 USERS[uid]["balance"] -= body.amount
+校验顺序不能乱：用户存在 → 金额合法 → 余额充足。
     """
     info = USERS.get(uid)
     if info is None:
@@ -169,9 +130,7 @@ public_router = APIRouter(prefix="/public", tags=["公开"])
 @public_router.get("/health")
 async def health() -> Resp:
     """
-    健康检查，不需要认证。要求： return Resp(data={"status": "ok"})
-
-    TODO
+健康检查，不需要认证。
     """
     return Resp(data={"status": "ok"})
 
@@ -187,23 +146,8 @@ app.include_router(public_router)
 @app.exception_handler(BizError)
 async def biz_error_handler(request: Request, exc: BizError) -> JSONResponse:
     """
-    把任何地方抛出的 BizError，统一转成这个格式：
-
-        HTTP 状态码：400
-        body：{"code": exc.code, "message": exc.message, "data": None}
-
-    TODO
-
-    提示：
-        return JSONResponse(
-            status_code=400,
-            content={"code": exc.code, "message": exc.message, "data": None},
-        )
-
-    为什么要这么做？
-      如果不处理，BizError 会变成 500 内部错误，前端拿到的是
-      "Internal Server Error"，既没有错误码也没有提示信息。
-      统一处理之后，前端只需要写一套错误处理逻辑。
+把任何地方抛出的 BizError 统一转成
+{code, message, data} 格式，HTTP 状态码固定 400。
     """
     return JSONResponse(
         status_code=400,

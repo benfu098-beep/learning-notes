@@ -27,15 +27,7 @@ ITEMS = [{"name": f"item-{i}", "price": float(i * 10)} for i in range(1, 21)]
 @app.get("/users/{user_id}")
 async def get_user(user_id: int):
     """
-    要求：
-      GET /users/1   → 200  {"user_id": 1, "name": "小明"}
-      GET /users/99  → 404  {"detail": "用户 99 不存在"}
-
-    TODO
-
-    提示：
-      · user_id 已经是 int 了（FastAPI 按注解自动转换），不用自己转
-      · 不存在时： raise HTTPException(status_code=404, detail=f"用户 {user_id} 不存在")
+根据 user_id 查询用户；不存在则返回 404。
     """
     id_list = [1,2,3]
     if user_id not in id_list:
@@ -49,18 +41,10 @@ async def get_user(user_id: int):
 @app.get("/items")
 async def list_items(skip: int = 0, limit: int = 10, q: str | None = None):
     """
-    要求：
-      GET /items                 → 前 10 个，total=20
-      GET /items?skip=5&limit=3  → 第 6~8 个
-      GET /items?q=item-2        → 只返回 name 里含 "item-2" 的
+分页列出商品，支持按关键词 q 过滤。
 
-    返回：{"total": <过滤后的总数>, "items": <当前页>}
-
-    TODO
-
-    提示：
-      data = [x for x in ITEMS if q in x["name"]] if q else ITEMS
-      page = data[skip : skip + limit]
+返回 {"total": 过滤后的总条数, "items": 当前页数据}。
+（total 必须是【过滤后】的总数，否则前端算不出页数。）
     """
     data = [x for x in ITEMS if q in x["name"]] if q else ITEMS
     page = data[skip : skip + limit]
@@ -78,18 +62,7 @@ class ItemIn(BaseModel):
 @app.post("/items", status_code=201)
 async def create_item(item: ItemIn):
     """
-    要求：
-      POST {"name":"book","price":30}     → 201  {"created": {...}}
-      POST {"name":"book"}                → 422（price 必填）
-      POST {"name":"book","price":"abc"}  → 422（类型错）
-
-    后两种是 FastAPI 自动做的，你一行校验都不用写。
-
-    TODO
-
-    提示：
-      · item 已经是 ItemIn 实例，用 item.name / item.price
-      · 返回 {"created": item.model_dump()}
+新建商品。请求体由 ItemIn 模型自动校验，无需手写校验代码。
     """
     return {"created": item.model_dump()}
 
