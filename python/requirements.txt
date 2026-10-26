@@ -1,12 +1,17 @@
 # 学习笔记用到的依赖
 # 安装：uv pip install -r python/requirements.txt
 
-# 第 1–3 天
-httpx     # 第 3 天异步练习
-ruff      # 代码检查
-mypy      # 类型检查（第 2 天）
-pytest    # 测试
+# ── 第 1–3 天：Python 基础 ──
+httpx     # 异步 HTTP 客户端（第 3 天 / W2 下载器练习）
+ruff      # 代码检查与格式化
+mypy      # 静态类型检查
+pytest    # 单元测试
 
-# 预览用（W2 会正式学）
+# ── W2：Web 框架 ──
 fastapi
 uvicorn[standard]
+
+# ── W3：数据库（PostgreSQL 方案，不是视频里的 MySQL）──
+sqlalchemy[asyncio]   # ORM，带 asyncio 支持（会装上 greenlet）
+asyncpg               # PostgreSQL 异步驱动（对应视频里的 aiomysql）
+alembic               # 数据库迁移工具
