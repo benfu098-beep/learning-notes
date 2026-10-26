@@ -94,6 +94,7 @@ async def create_with_address(u: UserWithAddress):
 if __name__ == "__main__":
     client = TestClient(app, raise_server_exceptions=False)
     P = F = 0
+    SKIP = 0
 
     def ck(name, cond, detail=""):
         global P, F
@@ -109,6 +110,7 @@ if __name__ == "__main__":
     r = client.post("/users", json=ok)
     if r.status_code == 500:
         print("  ⏳ 还没实现（返回 500）")
+        SKIP += 1
     else:
         ck("正常数据 → 201", r.status_code == 201, f"实际 {r.status_code}")
         ck("name 为空 → 422", client.post("/users", json={**ok, "name": ""}).status_code == 422)
@@ -125,6 +127,7 @@ if __name__ == "__main__":
     r = client.get("/users/7")
     if r.status_code == 500:
         print("  ⏳ 还没实现（返回 500）")
+        SKIP += 1
     else:
         ck("GET /users/7 → 200", r.status_code == 200, f"实际 {r.status_code}")
         d = r.json()
@@ -140,6 +143,7 @@ if __name__ == "__main__":
     r = client.post("/users-with-address", json=payload)
     if r.status_code == 500:
         print("  ⏳ 还没实现（返回 500）")
+        SKIP += 1
     else:
         ck("嵌套数据 → 201", r.status_code == 201, f"实际 {r.status_code}")
         ck("能拿到嵌套字段", r.json().get("address", {}).get("city") == "北京", str(r.json()))
@@ -150,5 +154,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"  通过 {P}  失败 {F}")
     print("=" * 60)
-    if F == 0 and P > 0:
+    if SKIP:
+        print(f"  ⏳ 还有 {SKIP} 个任务没实现（通过 {P}）")
+    elif F == 0 and P > 0:
         print("  🎉 全部通过！")

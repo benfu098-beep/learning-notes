@@ -37,8 +37,11 @@ async def get_user(user_id: int):
       · user_id 已经是 int 了（FastAPI 按注解自动转换），不用自己转
       · 不存在时： raise HTTPException(status_code=404, detail=f"用户 {user_id} 不存在")
     """
-    raise NotImplementedError("请实现 get_user")
-
+    id_list = [1,2,3]
+    if user_id not in id_list:
+        raise HTTPException(status_code=404, detail=f"用户 {user_id} 不存在")
+    return {"user_id": user_id, "name": USERS[user_id]}
+    
 
 # ================================================================
 #  任务 2：查询参数
@@ -95,6 +98,7 @@ async def create_item(item: ItemIn):
 if __name__ == "__main__":
     client = TestClient(app, raise_server_exceptions=False)
     P = F = 0
+    SKIP = 0
 
     def ck(name, cond, detail=""):
         global P, F
@@ -109,6 +113,7 @@ if __name__ == "__main__":
     r = client.get("/users/1")
     if r.status_code == 500:
         print("  ⏳ 还没实现（返回 500）")
+        SKIP += 1
     else:
         ck("GET /users/1 → 200", r.status_code == 200, f"实际 {r.status_code}")
         if r.status_code == 200:
@@ -124,6 +129,7 @@ if __name__ == "__main__":
     r = client.get("/items")
     if r.status_code == 500:
         print("  ⏳ 还没实现（返回 500）")
+        SKIP += 1
     else:
         ck("GET /items → 200", r.status_code == 200, f"实际 {r.status_code}")
         if r.status_code == 200:
@@ -142,6 +148,7 @@ if __name__ == "__main__":
     r = client.post("/items", json={"name": "book", "price": 30})
     if r.status_code == 500:
         print("  ⏳ 还没实现（返回 500）")
+        SKIP += 1
     else:
         ck("POST 正常 → 201", r.status_code == 201, f"实际 {r.status_code}")
         if r.status_code == 201:
@@ -154,5 +161,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"  通过 {P}  失败 {F}")
     print("=" * 60)
-    if F == 0 and P > 0:
+    if SKIP:
+        print(f"  ⏳ 还有 {SKIP} 个任务没实现（通过 {P}）")
+    elif F == 0 and P > 0:
         print("  🎉 全部通过！")
