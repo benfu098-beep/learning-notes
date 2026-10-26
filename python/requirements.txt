@@ -2,7 +2,7 @@
 # 安装：uv pip install -r python/requirements.txt
 
 # ── 第 1–3 天：Python 基础 ──
-httpx     # 异步 HTTP 客户端（第 3 天 / W2 下载器练习）
+httpx     # 异步 HTTP 客户端
 ruff      # 代码检查与格式化
 mypy      # 静态类型检查
 pytest    # 单元测试
@@ -11,7 +11,13 @@ pytest    # 单元测试
 fastapi
 uvicorn[standard]
 
-# ── W3：数据库（PostgreSQL 方案，不是视频里的 MySQL）──
-sqlalchemy[asyncio]   # ORM，带 asyncio 支持（会装上 greenlet）
-asyncpg               # PostgreSQL 异步驱动（对应视频里的 aiomysql）
-alembic               # 数据库迁移工具
+# ── W3：数据库 ──
+sqlalchemy[asyncio]   # ORM（会装上 greenlet）
+alembic               # 数据库迁移
+
+# MySQL（跟视频学用这个）
+aiomysql              # MySQL 异步驱动
+pymysql               # MySQL 同步驱动（迁移工具等偶尔需要）
+
+# PostgreSQL（项目 B 的 pgvector 需要）
+asyncpg               # PostgreSQL 异步驱动
