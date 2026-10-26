@@ -31,16 +31,16 @@ class UserIn(BaseModel):
     注意 tags 已经写好了，是给你示范 default_factory 的用法
     （Day 1 学过的可变默认值坑，这里是它的官方解法）
     """
-    name: str
-    age: int
-    email: str
+    name: str = Field(min_length=1, max_length=20)
+    age: int = Field(ge=0, le=150)
+    email: str = Field(pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
     tags: list[str] = Field(default_factory=list)
 
 
 @app.post("/users", status_code=201)
 async def create_user(user: UserIn):
     """TODO: 返回 user.model_dump()"""
-    raise NotImplementedError("请实现 create_user")
+    return user.model_dump()
 
 
 # ================================================================
@@ -67,7 +67,7 @@ async def get_user(uid: int):
         "password": "secret123",
         "internal_note": "内部备注，不应该给前端",
     }
-    raise NotImplementedError("请返回 db_row")
+    return db_row
 
 
 # ================================================================
@@ -80,12 +80,13 @@ class Address(BaseModel):
 
 class UserWithAddress(BaseModel):
     """TODO: 定义 name: str 和 address: Address"""
-
+    name: str
+    address: Address
 
 @app.post("/users-with-address", status_code=201)
 async def create_with_address(u: UserWithAddress):
     """TODO: 返回 u.model_dump()"""
-    raise NotImplementedError("请实现 create_with_address")
+    return u.model_dump()
 
 
 # ================================================================
