@@ -62,7 +62,9 @@ async def list_items(skip: int = 0, limit: int = 10, q: str | None = None):
       data = [x for x in ITEMS if q in x["name"]] if q else ITEMS
       page = data[skip : skip + limit]
     """
-    raise NotImplementedError("请实现 list_items")
+    data = [x for x in ITEMS if q in x["name"]] if q else ITEMS
+    page = data[skip : skip + limit]
+    return {"total": len(data), "items": page}
 
 
 # ================================================================
@@ -89,7 +91,7 @@ async def create_item(item: ItemIn):
       · item 已经是 ItemIn 实例，用 item.name / item.price
       · 返回 {"created": item.model_dump()}
     """
-    raise NotImplementedError("请实现 create_item")
+    return {"created": item.model_dump()}
 
 
 # ================================================================
