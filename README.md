@@ -2,30 +2,51 @@
 
 2028 届 CS 学生的求职学习笔记。目标：**2027 年 3–5 月拿到暑期实习 offer（AI 应用开发 / Python 后端）**。
 
-## ▶️ 下次从这里开始（2026-10-15 周四 · 进入 W2）
+## ▶️ 下次从这里开始（2026-10-26 周一）
 
-**当前进度**：地基阶段（Day 1–3）**代码练习全部完成** ✅ · 准备进入 W2（Web 核心）
+> **⚠️ 计划已调整**：10/15–10/26 因期中考试中断 11 天，W2–W5 压缩，
+> 但**项目 A 开始时间（11/16）一天不动**。原 W5 的「练手项目」已砍掉。
 
-### 下次要做的四件事
+**当前进度**：W2 练习 1 完成了 1/3（任务 1 路径参数 ✅）
 
-- [ ] **1. 补完 ⑤ 思考题**（15 分钟）—— [day3_reflection.md](python/exercises/day3_reflection.md)
-      用【你自己的话】把 4 道题写一遍。这是面试练习，不是抄写。
-- [ ] **2. 看视频** —— [黑马程序员 FastAPI 从入门到实战](https://www.bilibili.com/video/BV1zV2QBtE39/)
-      只看「路由 / Pydantic / 依赖注入」这几部分（**别通看 15 小时**）
-- [ ] **3. 读讲义** —— [python/04-fastapi-basics.md](python/04-fastapi-basics.md)
-      重点看第 3 节（三种参数）、第 4 节（Pydantic）、第 5 节（Depends）、第 7 节（分层结构）
-- [ ] **4. 做练习** —— [w2_01_routing.py](python/exercises/w2_01_routing.py)、[w2_02_pydantic.py](python/exercises/w2_02_pydantic.py)
-      用 TestClient 自测，不需要启动服务器
+### 今天要做的事（约 2 小时，做完 W2 就追上了）
 
-### 周次对照
+- [ ] **1. 任务 2：查询参数**（2 行）—— [w2_01_routing.py](python/exercises/w2_01_routing.py)
+      ```python
+      data = [x for x in ITEMS if q in x["name"]] if q else ITEMS
+      return {"total": len(data), "items": data[skip : skip + limit]}
+      ```
+      对照视频 **P7**
+- [ ] **2. 任务 3：请求体**（1 行）
+      ```python
+      return {"created": item.model_dump()}
+      ```
+      对照视频 **P8、P9**
+- [ ] **3. 跑自测** → 看到 `通过 13  失败 0`
+- [ ] **4. 提交** → `git add -A && git commit -m "完成 W2 练习1" && git push`
+- [ ] **5. （有余力）做 w2_02_pydantic.py**
 
-| 周 | 日期 | 主题 |
-|---|---|---|
-| ~~W0–W1~~ | ~~10/08–10/18~~ | ~~地基：Python 速通 + asyncio~~ ✅ **已完成，提前 4 天** |
-| **W2** | 10/19–10/25 | **FastAPI 入门**（你 10/15 就开始了） |
-| W3 | 10/26–11/01 | 数据库（PostgreSQL + SQLAlchemy） |
+### 运行命令（记住：用 .venv 的 python）
+
+```bash
+cd ~/Documents/dev/learning-notes
+.venv/bin/python python/exercises/w2_01_routing.py
+```
+
+### 调整后的时间表
+
+| 周 | 日期 | 内容 | 备注 |
+|---|---|---|---|
+| ~~W0–W1~~ | 10/08–10/18 | 地基：Python 速通 + asyncio | ✅ 完成 |
+| **W2 收尾** | **10/26–10/27** | FastAPI 入门（2 个练习） | 🔵 现在 |
+| W3 | 10/28–11/03 | 数据库（PostgreSQL + SQLAlchemy） | 压缩到 6 天 |
+| W4 | 11/04–11/09 | Redis + 异步任务 | 压缩到 6 天 |
+| W5 | 11/10–11/15 | 工程化收尾 | ❌ 砍掉练手项目 |
+| **W6** | **11/16** | **项目 A 开始** | ✅ **守住，不动** |
 
 ---
+
+## 进度看板
 
 ## 进度看板
 
