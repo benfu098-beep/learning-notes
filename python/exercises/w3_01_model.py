@@ -68,7 +68,12 @@ class User(Base):
 
     # TODO 6: bio —— 大文本，可为空
     # bio: Mapped[???] = ...
-    pass
+    id:Mapped[int] = mapped_column(primary_key=True,comment="用户id")
+    username:Mapped[str] = mapped_column(String(50),unique=True,index=True,comment="用户名")
+    email:Mapped[str|None] = mapped_column(String(100),nullable=True,comment="邮箱")
+    is_active:Mapped[bool] = mapped_column(Boolean,default=True,comment="是否激活")
+    created_at:Mapped[datetime] = mapped_column(DateTime,server_default=func.now(),comment="创建时间")
+    bio:Mapped[str|None] = mapped_column(Text,nullable=True,comment="简介")
 
 
 # ================================================================
@@ -88,7 +93,9 @@ async def create_tables(engine):
     为什么用 run_sync？
       Base.metadata.create_all 是同步方法，异步 engine 里要通过 run_sync 调用。
     """
-    raise NotImplementedError("请实现 create_tables")
+    async with engine.begin() as conn:
+        await conn.execute(text("DROP TABLE IF EXISTS users"))
+        await conn.run_sync(Base.metadata.create_all)
 
 
 # ================================================================
@@ -120,21 +127,21 @@ async def main():
 
     c = User.__table__.columns.get("id")
     ck("id 是主键且自增", c is not None and c.primary_key and c.autoincrement in (True, "auto"),
-       str(c) if c else "缺失")
+       str(c) if c is not None else "缺失")
 
     c = User.__table__.columns.get("username")
     ck("username 唯一", c is not None and c.unique, "缺 unique")
     ck("username 有索引", c is not None and c.index, "缺 index")
     ck("username 长度 50", c is not None and getattr(c.type, "length", None) == 50,
-       f"实际 {getattr(c.type,'length',None) if c else '缺失'}")
+       f"实际 {getattr(c.type,'length',None) if c is not None else '缺失'}")
 
     c = User.__table__.columns.get("email")
     ck("email 可为空", c is not None and c.nullable, "应为 nullable=True")
     ck("email 长度 100", c is not None and getattr(c.type, "length", None) == 100,
-       f"实际 {getattr(c.type,'length',None) if c else '缺失'}")
+       f"实际 {getattr(c.type,'length',None) if c is not None else '缺失'}")
 
     c = User.__table__.columns.get("is_active")
-    ck("is_active 是布尔", c is not None and isinstance(c.type, Boolean), str(type(c.type)) if c else "缺失")
+    ck("is_active 是布尔", c is not None and isinstance(c.type, Boolean), str(type(c.type)) if c is not None else "缺失")
 
     c = User.__table__.columns.get("created_at")
     ck("created_at 有 server_default", c is not None and c.server_default is not None,
@@ -142,7 +149,7 @@ async def main():
 
     c = User.__table__.columns.get("bio")
     ck("bio 可为空", c is not None and c.nullable, "应为 nullable=True")
-    ck("bio 是大文本", c is not None and isinstance(c.type, Text), str(type(c.type)) if c else "缺失")
+    ck("bio 是大文本", c is not None and isinstance(c.type, Text), str(type(c.type)) if c is not None else "缺失")
 
     print()
     print("=" * 60)
