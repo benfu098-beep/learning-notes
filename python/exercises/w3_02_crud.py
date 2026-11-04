@@ -42,7 +42,11 @@ async def create_user(session: AsyncSession, username: str, email: str | None = 
         commit 之后对象可能被标记过期，refresh 会重新从数据库读一次，
         确保 id、created_at 这些数据库生成的字段都有值。
     """
-    raise NotImplementedError("请实现 create_user")
+    user = User(username=username, email=email)
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
 
 
 # ================================================================
@@ -62,7 +66,9 @@ async def get_by_username(session: AsyncSession, username: str):
     理解 scalar_one_or_none()：
       0 条 → None；1 条 → User；多条 → 抛异常（说明唯一约束没生效）
     """
-    raise NotImplementedError("请实现 get_by_username")
+    stmt = select(User).where(User.username == username)
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
 
 
 # ================================================================
@@ -84,7 +90,12 @@ async def update_email(session: AsyncSession, username: str, new_email: str) -> 
 
     理解：ORM 会自动比对，只 UPDATE 变化的字段。
     """
-    raise NotImplementedError("请实现 update_email")
+    user = await get_by_username(session,username)
+    if user is None:
+        return False
+    user.email = new_email
+    await session.commit()
+    return True
 
 
 # ================================================================
@@ -104,7 +115,12 @@ async def delete_user(session: AsyncSession, username: str) -> bool:
         await session.commit()
         return True
     """
-    raise NotImplementedError("请实现 delete_user")
+    user = await get_by_username(session,username)
+    if user is None:
+        return False
+    await session.delete(user)
+    await session.commit()
+    return True
 
 
 # ================================================================
