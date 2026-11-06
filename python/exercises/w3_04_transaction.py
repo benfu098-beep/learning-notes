@@ -67,7 +67,17 @@ async def transfer(session: AsyncSession, from_id: str, to_id: str, amount: floa
       · with_for_update=True        →  SELECT ... FOR UPDATE，加排他锁
                                        防止并发转账时两边都读到旧余额
     """
-    raise NotImplementedError("请实现 transfer")
+    async with session.begin():
+        a = await session.get(Account, from_id, with_for_update=True)
+        b = await session.get(Account, to_id, with_for_update=True)
+
+        if a is None or b is None:
+            raise ValueError("账户不存在")
+        if float(a.balance) < amount:
+            raise ValueError("余额不足")
+
+        a.balance = float(a.balance) - amount
+        b.balance = float(b.balance) + amount
 
 
 # ================================================================
@@ -81,7 +91,8 @@ async def get_isolation_level(session: AsyncSession) -> str:
         r = await session.execute(text("SELECT @@transaction_isolation"))
         return r.scalar()
     """
-    raise NotImplementedError("请实现 get_isolation_level")
+    c = await session.execute(text("SELECT @@transaction_isolation"))
+    return c.scalar()
 
 
 # ================================================================
