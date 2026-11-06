@@ -84,21 +84,33 @@ async def time_query(conn, email: str) -> float:
     """
     按 email 查一条记录，跑 ITERATIONS 次，返回【平均耗时（毫秒）】。
 
-    TODO: 实现它
-
-    提示：
+    正确写法（两行，先 await 再取结果）：
         t0 = time.perf_counter()
         for _ in range(ITERATIONS):
-            await conn.execute(
+            result = await conn.execute(
                 text(f"SELECT id, username FROM {TABLE} WHERE email = :e"),
                 {"e": email},
-            ).first()
-        cost = (time.perf_counter() - t0) / ITERATIONS * 1000
-        return cost
+            )
+            result.first()
+        return (time.perf_counter() - t0) / ITERATIONS * 1000
 
-    ⚠️ 注意：用 await ... .first() 保证结果真的取回来了（否则可能没执行完）
+    ⚠️ 千万不要写成  await conn.execute(...).first()
+       因为 .first() 的优先级比 await 高，实际执行的是：
+           await (conn.execute(...).first())
+       而 execute() 返回的是协程对象，没有 .first() 方法，会报：
+           AttributeError: 'coroutine' object has no attribute 'first'
+       正确做法要么加括号 (await conn.execute(...)).first()，
+       要么拆成两行（推荐，更清楚）。
     """
-    raise NotImplementedError("请实现 time_query")
+    t0 = time.perf_counter()
+    for _ in range(ITERATIONS):
+        result = await conn.execute(
+            text(f"SELECT id, username FROM {TABLE} WHERE email = :e"),
+            {"e": email},
+        )
+        result.first()
+    cost = (time.perf_counter() - t0) / ITERATIONS * 1000
+    return cost
 
 
 # ================================================================
@@ -117,7 +129,8 @@ async def create_email_index(conn):
     ⚠️ 如果索引已存在会报错。可以先查一下：
         SHOW INDEX FROM {TABLE} WHERE Key_name = 'idx_email'
     """
-    raise NotImplementedError("请实现 create_email_index")
+    await conn.execute(text(f"CREATE INDEX idx_email ON {TABLE} (email)"))
+    print("  · ✅ 索引已创建")
 
 
 # ================================================================
@@ -147,7 +160,16 @@ async def show_explain(conn, email: str) -> dict:
       key=None          → 没用索引
       rows=100000       → 预估要扫 10 万行
     """
-    raise NotImplementedError("请实现 show_explain")
+    r = await conn.execute(text(
+        f"EXPLAIN SELECT id, username FROM {TABLE} WHERE email = :e"
+    ), {"e": email})
+    row = r.mappings().first()       # mappings() 让结果能按列名访问
+    return {
+        "type": row["type"],
+        "key": row["key"],
+        "rows": row["rows"],
+        "Extra": row["Extra"],
+    }
 
 
 # ================================================================
