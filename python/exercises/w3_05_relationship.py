@@ -45,7 +45,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True)
 
     # TODO 1: 加 articles 关系
-    # articles: Mapped[list["Article"]] = relationship(back_populates="author")
+    articles: Mapped[list["Article"]] = relationship(back_populates="author")
 
 
 class Article(Base):
@@ -55,10 +55,10 @@ class Article(Base):
     title: Mapped[str] = mapped_column(String(200))
 
     # TODO 2: 加 author_id（外键，指向 User.id）
-    # author_id: Mapped[int] = mapped_column(ForeignKey("rel_users.id"))
+    author_id: Mapped[int] = mapped_column(ForeignKey("rel_users.id"))
 
     # TODO 3: 加 author 关系（反向）
-    # author: Mapped["User"] = relationship(back_populates="articles")
+    author: Mapped["User"] = relationship(back_populates="articles")
 
 
 # ================================================================
@@ -77,7 +77,8 @@ async def lazy_load_broken(session: AsyncSession, user_id: int):
 
     这个函数【不会】成功，自测会检查它抛出了 MissingGreenlet。
     """
-    raise NotImplementedError("请实现 lazy_load_broken")
+    user = await session.get(User, user_id)
+    return [a.title for a in user.articles]
 
 
 # ================================================================
@@ -101,7 +102,15 @@ async def load_with_articles(session: AsyncSession, user_id: int) -> list[str]:
     注意：这里能成功，是因为 selectinload 在【查询时】就把 articles 捞进来了，
           后面访问 user.articles 不再发 SQL。
     """
-    raise NotImplementedError("请实现 load_with_articles")
+    stmt = (
+        select(User)
+        .options(selectinload(User.articles))
+        .where(User.id == user_id)
+    )
+    user = (await session.execute(stmt)).scalar_one_or_none()
+    if user is None:
+        return []
+    return [a.title for a in user.articles]
 
 
 # ================================================================
@@ -125,7 +134,15 @@ async def load_article_with_author(session: AsyncSession, article_id: int):
     为什么这里用 joinedload 而不是 selectinload？
       因为"多对一"：一篇文章只有一个作者，JOIN 不会产生数据膨胀。
     """
-    raise NotImplementedError("请实现 load_article_with_author")
+    stmt = (
+        select(Article)
+        .options(joinedload(Article.author))
+        .where(Article.id == article_id)
+    )
+    article = (await session.execute(stmt)).scalar_one_or_none()
+    if article is None:
+        return None
+    return article.author.username
 
 
 # ================================================================
@@ -195,14 +212,15 @@ async def main():
         print(f"  ⏳ {e}")
         await engine.dispose()
         return
-    except Exception as e:
-        name = type(e).__name__
-        if "MissingGreenlet" in name or "MissingGreenlet" in str(e):
-            print(f"  ✅ 成功触发 {name}（这正是我们想让你看到的）")
+    except Exception as e:            # noqa: BLE001  这里是故意的宽捕获
+        raw = f"{type(e).__name__}: {e}"
+        if "MissingGreenlet" in raw:
+            print("  ✅ 成功触发 MissingGreenlet（这正是我们想让你看到的）")
+            print(f"     外层被 SQLAlchemy 包装成 {type(e).__name__}")
             print("     ↑ 异步里访问未加载的关系 → 隐式 IO → 报错")
             P += 1
         else:
-            print(f"  ⚠️ 抛了别的异常：{name}: {str(e)[:80]}")
+            print(f"  ⚠️ 抛了别的异常：{raw[:80]}")
             F += 1
 
     # ---------- 任务 5：selectinload ----------
