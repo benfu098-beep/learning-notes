@@ -16,7 +16,7 @@ W3 练习 4：事务与锁
 
 import asyncio
 
-from sqlalchemy import Numeric, String, select, text
+from sqlalchemy import Numeric, String, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -192,11 +192,10 @@ async def main():
     await reset()
     print("  模拟：扣了 A 的钱，然后抛异常")
     try:
-        async with Session() as s:
-            async with s.begin():
-                acc = await s.get(Account, "A", with_for_update=True)
-                acc.balance = float(acc.balance) - 999      # 先改了
-                raise RuntimeError("模拟中途崩溃")            # 再抛异常
+        async with Session() as s, s.begin():
+            acc = await s.get(Account, "A", with_for_update=True)
+            acc.balance = float(acc.balance) - 999      # 先改了
+            raise RuntimeError("模拟中途崩溃")            # 再抛异常
     except RuntimeError:
         pass
     a, b = await balances()
