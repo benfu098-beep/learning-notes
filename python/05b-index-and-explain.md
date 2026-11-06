@@ -133,7 +133,7 @@ WHERE a = 1 AND c = 3          -- ⚠️ 只有 a 能用，c 退化为过滤
 ### ① 对索引列做运算或函数
 
 ```sql
--- ❌ 失效：索引列被函数包裹
+-- ❌ 索引列被函数包裹
 WHERE YEAR(created_at) = 2026
 WHERE id + 1 = 100
 
@@ -141,6 +141,18 @@ WHERE id + 1 = 100
 WHERE created_at >= '2026-01-01' AND created_at < '2027-01-01'
 WHERE id = 99
 ```
+
+**⚠️ 实测修正（重要）**：这种情况下 `type` 不一定是 `ALL`，**可能是 `index`**。
+
+| type | 扫的是什么 | 好坏 |
+|---|---|---|
+| `ALL` | 整张**表** | 差 |
+| **`index`** | 整棵**索引树** | **也是差**（除非数据很少） |
+
+因为优化器发现"索引里就有我要的列"（覆盖索引），于是扫索引树比回表划算——**但它仍然是"从头扫到尾"，`rows` 照样是 10 万**。
+
+> **所以判断快慢不能只看 `type` 是不是 `ALL`，要看 `rows`。**
+> `type=index` + `rows=99474` 和 `type=ALL` + `rows=99474` 一样慢。
 
 ### ② 隐式类型转换
 
@@ -155,9 +167,20 @@ WHERE phone = '13800138000'      -- ✅
 ### ③ 前导模糊匹配
 
 ```sql
-WHERE name LIKE '%张三'          -- ❌ 用不上索引（不知道开头是什么）
+WHERE name LIKE '%张三'          -- ❌ 无法用索引做范围定位
 WHERE name LIKE '张三%'          -- ✅ 能用（左前缀确定）
 ```
+
+**⚠️ 实测结果**：
+
+| 写法 | type | rows | 说明 |
+|---|---|---|---|
+| `LIKE '%user50000%'` | `index` | **99474** | 扫整棵索引树，白扫 |
+| `LIKE 'user50000%'` | `range` | **1** | ✅ 只扫 1 行，非常高效 |
+
+**结论**：
+- **前导 `%` 的模糊查询基本就是全扫**（不管 type 显示 ALL 还是 index，看 rows）
+- **`字段%` 这种左前缀模糊，索引是真正生效的**，而且效率很高——很多人以为"LIKE 就不能用索引"，**这是错的**，只有前导 `%` 才失效
 
 ### ④ `OR` 连接了非索引列
 
@@ -172,7 +195,50 @@ WHERE email = 'a@b.com' OR age = 20
 
 ---
 
+
+---
+
+## 5.5 ⭐ 判断快慢的唯一标准：看 `rows`
+
+以上所有"索引失效"的讨论，最后都归结为一个动作：
+
+> **看 EXPLAIN 里的 `rows`。它才是"预估要扫多少行"。**
+
+| `rows` | 含义 | 判断 |
+|---|---|---|
+| 1 ~ 10 | 索引精确定位 | ✅ 好 |
+| 几十 ~ 几百 | 范围查询，正常 | ✅ 可接受 |
+| **接近表总行数** | **等于全扫** | ❌ 索引白建了 |
+
+**`type` 只是"访问方式的名字"，`rows` 才是"实际代价"。**
+
+- `type=ALL` + `rows=100000` → 扫全表
+- `type=index` + `rows=100000` → 扫全索引树
+- **两者一样慢**，区别只是扫的对象不同
+
+---
+
 ## 6. EXPLAIN：怎么看执行计划
+
+> ⚠️ **MySQL 26 的版本差异（我踩到了）**
+>
+> 新版 `EXPLAIN` 默认返回**单列树形文本**，不再是你熟悉的 12 列表格：
+>
+> ```
+> EXPLAIN
+> -> Index lookup on perf_test using idx_email (email = '...')  (cost=0.35 rows=1)
+> ```
+>
+> **想拿到经典表格（`type` / `key` / `rows` / `Extra`），必须显式指定：**
+>
+> ```sql
+> EXPLAIN FORMAT=TRADITIONAL SELECT ...;      -- 经典 12 列 ⭐
+> EXPLAIN FORMAT=JSON SELECT ...;             -- 详细 JSON
+> EXPLAIN ANALYZE SELECT ...;                 -- 带真实耗时
+> ```
+>
+> **面试和八股讲的都是 `type=ref` / `type=ALL` 这套，所以用 `TRADITIONAL`。**
+
 
 ```sql
 EXPLAIN SELECT * FROM users WHERE email = 'a@b.com';

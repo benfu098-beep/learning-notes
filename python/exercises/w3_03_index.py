@@ -144,7 +144,7 @@ async def show_explain(conn, email: str) -> dict:
 
     提示：
         r = await conn.execute(text(
-            f"EXPLAIN SELECT id, username FROM {TABLE} WHERE email = :e"
+            f"EXPLAIN FORMAT=TRADITIONAL SELECT id, username FROM {TABLE} WHERE email = :e"
         ), {"e": email})
         row = r.mappings().first()       # mappings() 让结果能按列名访问
         return {
@@ -161,7 +161,7 @@ async def show_explain(conn, email: str) -> dict:
       rows=100000       → 预估要扫 10 万行
     """
     r = await conn.execute(text(
-        f"EXPLAIN SELECT id, username FROM {TABLE} WHERE email = :e"
+        f"EXPLAIN FORMAT=TRADITIONAL SELECT id, username FROM {TABLE} WHERE email = :e"
     ), {"e": email})
     row = r.mappings().first()       # mappings() 让结果能按列名访问
     return {
@@ -193,7 +193,7 @@ async def invalidation_tests(conn):
     print(f"  {'场景':<42} {'type':<8} {'key':<14} rows")
     print("  " + "-" * 82)
     for name, sql in cases:
-        r = await conn.execute(text("EXPLAIN " + sql))
+        r = await conn.execute(text("EXPLAIN FORMAT=TRADITIONAL " + sql))
         row = r.mappings().first()
         key = row["key"] if row["key"] else "NULL"
         print(f"  {name:<42} {row['type']:<8} {key:<14} {row['rows']}")
